@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Messages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        h1 {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .messages-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        input, textarea, select {
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        #resetFilter {
+            background: #6c757d;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        #resetFilter:hover {
+            background: #5a6268;
+            box-shadow: 0 3px 10px rgba(108, 117, 125, 0.4);
+        }
+
+        #counter {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .message {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .timestamp {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .message-content {
+            color: #333;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .no-messages {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+                padding: 20px;
+            }
+
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        /* Animation pour les nouveaux messages */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.new {
+            animation: slideIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💬 Messages</h1>
+        
+        <div class="content">
+            <div class="form-section">
+                <h2>Créer un message</h2>
+                <div class="success-message" id="successMessage">
+                    Message envoyé avec succès !
+                </div>
+                <form id="messageForm">
+                    <label for="userId">ID utilisateur :</label>
+                    <input type="number" id="userId" required min="1" placeholder="Entrez un ID utilisateur...">
+                    
+                    <label for="content">Contenu du message :</label>
+                    <textarea id="content" rows="4" required placeholder="Tapez votre message ici..."></textarea>
+                    
+                    <button type="submit">📤 Envoyer le message</button>
+                </form>
+            </div>
+
+            <div class="messages-section">
+                <h2>Liste des messages</h2>
+                
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label for="filterUser">Filtrer par utilisateur :</label>
+                        <select id="filterUser">
+                            <option value="">Tous les utilisateurs</option>
+                        </select>
+                    </div>
+                    <button id="resetFilter">🔄 Réinitialiser</button>
+                </div>
+                
+                <div id="counter">Nombre de messages affichés : 0</div>
+                
+                <div id="messagesList">
+                    <div class="no-messages">
+                        Aucun message pour le moment. Créez votre premier message !
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stockage en mémoire des messages
+        let messages = [];
+        let messageIdCounter = 1;
+
+        // Éléments du DOM
+        const messageForm = document.getElementById('messageForm');
+        const userIdInput = document.getElementById('userId');
+        const contentInput = document.getElementById('content');
+        const filterUserSelect = document.getElementById('filterUser');
+        const resetFilterButton = document.getElementById('resetFilter');
+        const messagesList = document.getElementById('messagesList');
+        const counter = document.getElementById('counter');
+        const successMessage = document.getElementById('successMessage');
+
+        // Initialisation avec quelques messages de démonstration
+        function initializeWithSampleData() {
+            const sampleMessages = [
+                { userId: 1, content: "Bonjour ! Comment allez-vous aujourd'hui ?" },
+                { userId: 2, content: "Merci pour votre aide hier, c'était très utile." },
+                { userId: 1, content: "J'ai une question sur le projet en cours." },
+                { userId: 3, content: "Excellent travail sur la présentation !" },
+                { userId: 2, content: "Pouvons-nous programmer une réunion pour demain ?" }
+            ];
+
+            sampleMessages.forEach(msg => {
+                addMessage(msg.userId, msg.content, false);
+            });
+            
+            updateDisplay();
+        }
+
+        // Fonction pour ajouter un message
+        function addMessage(userId, content, isNew = true) {
+            const message = {
+                id: messageIdCounter++,
+                userId: parseInt(userId),
+                content: content.trim(),
+                timestamp: new Date()
+            };
+            
+            messages.unshift(message); // Ajouter au début pour avoir les plus récents en haut
+            
+            // Mettre à jour la liste des utilisateurs dans le filtre
+            updateUserFilter();
+            
+            if (isNew) {
+                showSuccessMessage();
+                updateDisplay();
+            }
+        }
+
+        // Afficher le message de succès
+        function showSuccessMessage() {
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // Mettre à jour la liste des utilisateurs dans le filtre
+        function updateUserFilter() {
+            const userIds = [...new Set(messages.map(msg => msg.userId))].sort((a, b) => a - b);
+            const currentValue = filterUserSelect.value;
+            
+            filterUserSelect.innerHTML = '<option value="">Tous les utilisateurs</option>';
+            
+            userIds.forEach(userId => {
+                const option = document.createElement('option');
+                option.value = userId;
+                option.textContent = `Utilisateur ${userId}`;
+                filterUserSelect.appendChild(option);
+            });
+            
+            // Restaurer la sélection précédente si elle existe encore
+            if (currentValue && userIds.includes(parseInt(currentValue))) {
+                filterUserSelect.value = currentValue;
+            }
+        }
+
+        // Formater la date
+        function formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return "À l'instant";
+            if (minutes < 60) return `Il y a ${minutes} min`;
+            if (hours < 24) return `Il y a ${hours}h`;
+            if (days < 7) return `Il y a ${days}j`;
+            
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Afficher les messages
+        function displayMessages() {
+            const filterUserId = filterUserSelect.value;
+            
+            let filteredMessages = messages;
+            if (filterUserId) {
+                filteredMessages = messages.filter(msg => msg.userId === parseInt(filterUserId));
+            }
+            
+            // Mettre à jour le compteur
+            counter.textContent = `Nombre de messages affichés : ${filteredMessages.length}`;
+            
+            if (filteredMessages.length === 0) {
+                messagesList.innerHTML = '<div class="no-messages">Aucun message trouvé avec les filtres actuels.</div>';
+                return;
+            }
+            
+            messagesList.innerHTML = filteredMessages.map(msg => `
+                <div class="message new">
+                    <div class="message-header">
+                        <span class="user-id">👤 Utilisateur ${msg.userId}</span>
+                        <span class="timestamp">${formatDate(msg.timestamp)}</span>
+                    </div>
+                    <div class="message-content">${msg.content}</div>
+                </div>
+            `).join('');
+
+            // Retirer la classe 'new' après l'animation
+            setTimeout(() => {
+                document.querySelectorAll('.message.new').forEach(el => {
+                    el.classList.remove('new');
+                });
+            }, 500);
+        }
+
+        // Mettre à jour l'affichage
+        function updateDisplay() {
+            displayMessages();
+            updateUserFilter();
+        }
+
+        // Gestionnaire d'événements pour le formulaire
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userId = userIdInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            if (!userId || !content) {
+                alert('Veuillez remplir tous les champs.');
+                return;
+            }
+            
+            if (parseInt(userId) < 1) {
+                alert('L\'ID utilisateur doit être un nombre positif.');
+                return;
+            }
+            
+            addMessage(userId, content);
+            
+            // Réinitialiser le formulaire
+            messageForm.reset();
+            userIdInput.focus();
+        });
+
+        // Gestionnaire pour le filtre utilisateur
+        filterUserSelect.addEventListener('change', displayMessages);
+
+        // Gestionnaire pour le bouton de réinitialisation
+        resetFilterButton.addEventListener('click', function() {
+            filterUserSelect.value = '';
+            displayMessages();
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWithSampleData();
+            userIdInput.focus();
+            
+            // Mettre à jour les timestamps toutes les minutes
+            setInterval(() => {
+                displayMessages();
+            }, 60000);
+        });
+    </script>
+</body>
+</html>

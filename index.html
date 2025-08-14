@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Messages API avec Filtre et Compteur</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        #messages {
+            margin-top: 20px;
+        }
+
+        .message {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Messages</h1>
+
+    <div>
+        <h2>Créer un message</h2>
+        <form id="messageForm">
+            <label for="userId">ID utilisateur :</label>
+            <input type="number" id="userId" required>
+
+            <label for="content">Contenu du message :</label>
+            <textarea id="content" rows="3" required></textarea>
+
+            <button type="submit">Envoyer le message</button>
+        </form>
+    </div>
+
+    <div id="messages">
+        <h2>Liste des messages</h2>
+
+        <label for="filterUser">Filtrer par utilisateur :</label>
+        <select id="filterUser">
+            <option value="">Tous</option>
+        </select>
+        <button id="resetFilter">Réinitialiser le filtre</button>
+
+        <p id="counter">Nombre de messages affichés : 0</p>
+
+        <div id="messagesList"></div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:3000';
+        let allMessages = [];
+
+        // Récupérer tous les messages via le proxy
+        async function fetchMessages() {
+            try {
+                const response = await fetch(`${baseUrl}/messages`);
+                if (!response.ok) throw new Error('Erreur lors du chargement des messages');
+                allMessages = await response.json();
+                populateFilterOptions();
+                displayMessages(allMessages);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        // Afficher les messages et mettre à jour le compteur
+        function displayMessages(messages) {
+            const listDiv = document.getElementById('messagesList');
+            listDiv.innerHTML = '';
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.innerHTML = `<strong>Utilisateur ${msg.userId} :</strong> ${msg.content} <br><small>Créé : ${new Date(msg.createdAt).toLocaleString()}</small>`;
+                listDiv.appendChild(div);
+            });
+            document.getElementById('counter').textContent = `Nombre de messages affichés : ${messages.length}`;
+        }
+
+        // Remplir la liste déroulante de filtrage
+        function populateFilterOptions() {
+            const select = document.getElementById('filterUser');
+            const userIds = [...new Set(allMessages.map(m => m.userId))];
+            select.innerHTML = '<option value="">Tous</option>';
+            userIds.forEach(id => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = `Utilisateur ${id}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Filtrage par utilisateur
+        document.getElementById('filterUser').addEventListener('change', () => {
+            const userId = document.getElementById('filterUser').value;
+            if (userId) {
+                displayMessages(allMessages.filter(m => m.userId == userId));
+            } else {
+                displayMessages(allMessages);
+            }
+        });
+
+        // Réinitialiser le filtre
+        document.getElementById('resetFilter').addEventListener('click', () => {
+            document.getElementById('filterUser').value = '';
+            displayMessages(allMessages);
+        });
+
+        // Soumission du formulaire pour créer un message
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const content = document.getElementById('content').value;
+
+            const bodyData = { content: content, userId: Number(userId) };
+
+            try {
+                const response = await fetch(`${baseUrl}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+                if (!response.ok) throw new Error('Erreur lors de l\'envoi du message');
+                const newMessage = await response.json();
+                alert('Message envoyé avec succès !');
+                document.getElementById('messageForm').reset();
+                fetchMessages(); // rafraîchit la liste et filtre
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // Chargement initial
+        fetchMessages();
+    </script>
+
+</body>
+
+</html>
